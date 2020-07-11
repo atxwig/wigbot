@@ -1,5 +1,6 @@
 import discord
 from discord.ext import commands
+import os
 import random
 import pathlib
 import sys
@@ -16,18 +17,8 @@ bot = commands.Bot(command_prefix=command_prefix, description=description,
 
 # globals
 guild_id = 670469511572488223  # TODO: find a way to not hardcode
-token = 0
 cached_invite_list = {}
 default_channel = 0
-
-
-# read token from secrets
-f = open("secrets.txt", "r")
-lines = f.readlines()
-for line in lines:
-    if "TOKEN" in line:
-        line_list = line.split("=")
-        token = line_list[1]
 
 
 # start up
@@ -96,4 +87,4 @@ async def helpme(ctx):
     await ctx.send(embed=embed)
 
 
-bot.run(token)
+bot.run(os.environ.get('BOT_TOKEN'))
