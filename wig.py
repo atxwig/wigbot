@@ -16,7 +16,7 @@ bot = commands.Bot(command_prefix=command_prefix, description=description,
 
 
 # globals
-guild_id = 670469511572488223  # TODO: find a way to not hardcode
+guild_id = 550143114417930250  # TODO: find a way to not hardcode
 cached_invite_list = {}
 default_channel = 0
 
