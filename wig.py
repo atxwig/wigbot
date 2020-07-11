@@ -10,7 +10,7 @@ import traceback
 
 # bot description
 command_prefix = '!w '
-description = "beepo for the boys"
+description = "WIGWIGWIG"
 bot = commands.Bot(command_prefix=command_prefix, description=description,
                    case_insensitive=True)
 
@@ -19,6 +19,14 @@ bot = commands.Bot(command_prefix=command_prefix, description=description,
 guild_id = 550143114417930250  # TODO: find a way to not hardcode
 cached_invite_list = {}
 default_channel = 0
+token = 0
+
+f = open("secrets.txt", "r") # fetch token from secrets file
+lines = f.readlines()
+for line in lines:
+    if "TOKEN" in line:
+        line_list = line.split("=")
+        token = line_list[1]
 
 
 # start up
@@ -29,6 +37,10 @@ async def on_ready():
     print("caching invites . . .")
     await cache_invites()
     print("done")
+
+    game = discord.Game("ily alesha <3")
+    await bot.change_presence(activity = game)
+
 
 
 # set channel command
@@ -86,5 +98,18 @@ async def helpme(ctx):
 
     await ctx.send(embed=embed)
 
+# hug command
+@bot.command()
+async def hug(ctx, member_id):
+    member_id = member_id[3:-1]
+    print(member_id)
+    member = ctx.message.guild.get_member(int(member_id))
+    print(member.nick)
+    if member:
+        await ctx.send(f"{ctx.message.author.mention} is omega cute and hugged {member.mention}!")
+    else:
+        await ctx.send("I couldn't find that user D:")
 
-bot.run(os.environ.get('BOT_TOKEN'))
+
+# bot.run(os.environ.get('BOT_TOKEN'))
+bot.run(token)
