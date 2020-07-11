@@ -84,7 +84,23 @@ async def helpme(ctx):
     embed.add_field(name=f"{command_prefix} setchannel",
                     value="Sets current channel to default channel. (Right now just picks what channel to send the invite messages to.", inline=False)
 
+    embed.add_field(name=f"{command_prefix} hug [@user]",
+                    value="Sends a cute hug to whoever you at uwu", inline=False)
+
     await ctx.send(embed=embed)
+
+
+# hug command
+@bot.command()
+async def hug(ctx, member_id):
+    member_id = member_id[3:-1]
+    print(member_id)
+    member = ctx.message.guild.get_member(int(member_id))
+    print(member.nick)
+    if member:
+        await ctx.send(f"{ctx.message.author.mention} is omega cute and hugged {member.mention}!")
+    else:
+        await ctx.send("I couldn't find that user D:")
 
 
 bot.run(os.environ.get('BOT_TOKEN'))
