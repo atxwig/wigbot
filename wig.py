@@ -9,8 +9,8 @@ import traceback
 
 
 # bot description
-command_prefix = '!w '
-description = "beepo for the boys"
+command_prefix = '%'
+description = "wig wig wig"
 bot = commands.Bot(command_prefix=command_prefix, description=description,
                    case_insensitive=True)
 
@@ -28,6 +28,11 @@ async def on_ready():
 
     print("caching invites . . .")
     await cache_invites()
+
+    # set bot status
+    game = discord.Game("wigwigwig")
+    await bot.change_presence(activity=game)
+
     print("done")
 
 
@@ -79,12 +84,12 @@ async def helpme(ctx):
     embed = discord.Embed(title="TWIGGY COMMANDS",
                           description=f"Command prefix = {command_prefix}")
     embed.add_field(
-        name=f"{command_prefix} test", value="Sends wigwigwig", inline=False)
+        name=f"{command_prefix}test", value="Sends wigwigwig", inline=False)
 
-    embed.add_field(name=f"{command_prefix} setchannel",
+    embed.add_field(name=f"{command_prefix}setchannel",
                     value="Sets current channel to default channel. (Right now just picks what channel to send the invite messages to.", inline=False)
 
-    embed.add_field(name=f"{command_prefix} hug [@user]",
+    embed.add_field(name=f"{command_prefix}hug [@user]",
                     value="Sends a cute hug to whoever you at uwu", inline=False)
 
     await ctx.send(embed=embed)
