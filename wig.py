@@ -9,8 +9,13 @@ import traceback
 
 
 # bot description
+<<<<<<< HEAD
 command_prefix = '-'
 description = "wigwigwig"
+=======
+command_prefix = '%'
+description = "wig wig wig"
+>>>>>>> 5968d23234082e2759680a91666900b67b377e07
 bot = commands.Bot(command_prefix=command_prefix, description=description,
                    case_insensitive=True)
 
@@ -35,6 +40,11 @@ async def on_ready():
 
     print("caching invites . . .")
     await cache_invites()
+
+    # set bot status
+    game = discord.Game("wigwigwig")
+    await bot.change_presence(activity=game)
+
     print("done")
 
 
