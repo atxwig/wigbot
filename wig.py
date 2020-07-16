@@ -9,13 +9,8 @@ import traceback
 
 
 # bot description
-<<<<<<< HEAD
 command_prefix = '-'
 description = "wigwigwig"
-=======
-command_prefix = '%'
-description = "wig wig wig"
->>>>>>> 5968d23234082e2759680a91666900b67b377e07
 bot = commands.Bot(command_prefix=command_prefix, description=description,
                    case_insensitive=True)
 
