@@ -1,0 +1,79 @@
+ROLE FUNCTIONS
+- bot cares about whats in each message and sends them itself
+
+format (normal text message):
+    title - top of the message, something that describes the roles (ie what consoles do you use?)
+    roles - emoji "  " [role name] (# users)
+
+- bot keeps track of users of each role and dynamically updates the message
+- database needs to store a message id, emoji, role, and number of users with that role
+- bot would use an event based on a reaction to check and update roles
+- could pull number of users from guild rather than storing it locally (not sure which is faster)
+
+FILE CACHE
+- needs to store:
+    - message id (messages that have role reactions bound to them)
+        - emoji / role / user count
+        - valid flag (0 = false, 1 = true)
+    
+FORMAT 
+ID=[message_id],VALID=[0]
+EMOJI=[emoji],ROLE=[role],USERS=[users]
+EMOJI=[],ROLE=[],USERS=[]
+...
+ID=[]
+...
+
+COMMANDS [all commands require admin perms]
+- addmessage [id]
+    - binds message to be a role reaction message
+    - stores message id in database
+    - prepares for roles to be added
+
+- removemessage [id]
+    - removes role reaction bind from a message
+    - deletes it from the database
+    - maybe mark it as inactive instead of delete incase it was a mistake
+
+- purgedb [-a]
+    - purges inactive role messages from database
+    - -a flag purges all role messages from database
+    - add confirmation before deleting
+
+- addreaction [emoji] [role] [id]
+    - adds the given reaction to the message
+    - check for valid emoji and role
+    - give user error if in the wrong order, or maybe check for other orders
+
+- removereaction [emoji / role] [id]
+    - can remove based on emoji or role
+    - check that this role is added
+
+- giverole [member_mention, mention, mention, ...] [-a]
+    - adds role to mentioned members in the guild
+    - ping for confirmation
+    - -a flag adds to all members
+
+- removerole [member_mention, mention, mention, ...] [-a]
+    - removes role from given members in the guild
+    - ping for confirmation
+    - -a flag removes from all members
+
+- listmessages [-v]
+    - lists all current reaction messages ids, their titles, and jumps to those messages
+    - sorts by valid / invalid
+    - -v flag lists out reactions / roles as well
+
+
+EVENTS
+- on reaction
+    - check which message id was reacted to, continue if reaction message
+    - check if emoji corresponds to role, if it doesnt remove it
+    - if it does, apply that role to that user. if the user already has the role, remove it
+    - update reaction message to correspond to new count
+
+- on ready
+    - read cache 
+    - make sure emojis match messages, purge random ones
+    - make sure role counts are updated
+    - update cache if needed

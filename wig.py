@@ -7,6 +7,8 @@ import sys
 import io
 import traceback
 
+from commands.roles.roles import Roles
+
 
 # bot description
 command_prefix = '!w '
@@ -28,6 +30,22 @@ for line in lines:
         line_list = line.split("=")
         token = line_list[1]
 
+<<<<<<< Updated upstream
+=======
+local = len(sys.argv) == 2 and sys.argv[1] == "-l"
+
+if local:
+    token = 0
+    f = open("secrets.txt", "r") # fetch token from secrets file
+    lines = f.readlines()
+    for line in lines:
+        if "TOKEN" in line:
+            line_list = line.split("=")
+            token = line_list[1]
+
+
+bot.add_cog(Roles(bot))
+>>>>>>> Stashed changes
 
 # start up
 @bot.event
@@ -111,5 +129,12 @@ async def hug(ctx, member_id):
         await ctx.send("I couldn't find that user D:")
 
 
+<<<<<<< Updated upstream
 # bot.run(os.environ.get('BOT_TOKEN'))
 bot.run(token)
+=======
+if local:
+    bot.run(token)
+else:
+    bot.run(os.environ.get('BOT_TOKEN'))
+>>>>>>> Stashed changes
