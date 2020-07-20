@@ -30,8 +30,6 @@ for line in lines:
         line_list = line.split("=")
         token = line_list[1]
 
-<<<<<<< Updated upstream
-=======
 local = len(sys.argv) == 2 and sys.argv[1] == "-l"
 
 if local:
@@ -45,7 +43,6 @@ if local:
 
 
 bot.add_cog(Roles(bot))
->>>>>>> Stashed changes
 
 # start up
 @bot.event
@@ -129,12 +126,7 @@ async def hug(ctx, member_id):
         await ctx.send("I couldn't find that user D:")
 
 
-<<<<<<< Updated upstream
-# bot.run(os.environ.get('BOT_TOKEN'))
-bot.run(token)
-=======
 if local:
     bot.run(token)
 else:
     bot.run(os.environ.get('BOT_TOKEN'))
->>>>>>> Stashed changes
