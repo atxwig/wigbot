@@ -23,13 +23,6 @@ cached_invite_list = {}
 default_channel = 0
 token = 0
 
-f = open("secrets.txt", "r") # fetch token from secrets file
-lines = f.readlines()
-for line in lines:
-    if "TOKEN" in line:
-        line_list = line.split("=")
-        token = line_list[1]
-
 local = len(sys.argv) == 2 and sys.argv[1] == "-l"
 
 if local:
@@ -53,7 +46,7 @@ async def on_ready():
     await cache_invites()
     print("done")
 
-    game = discord.Game("ily alesha <3")
+    game = discord.Game("wigwigwig")
     await bot.change_presence(activity = game)
 
 
