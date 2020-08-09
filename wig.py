@@ -110,16 +110,9 @@ async def getinvitechannel(ctx):
         await ctx.send(f"The default channel for invites hasn't been set yet :c")
 
 
-# get channel command
-@bot.command()
-async def getchannel(ctx):
-    global default_channel_id
-    await ctx.send(f"The default channel is {bot.get_channel(default_channel_id).mention}.")
-
 # member join
 @bot.event
 async def on_member_join(member):
-    global default_channel_id
     invite_id_list = await member.guild.invites()  # fetch current invite uses
 
     curr_invite_list = {}
@@ -228,7 +221,7 @@ async def getinfo(ctx, invite_id):
     message = f"I couldn't find **{invite_id}** in my invites database :c"
     loc = cursor.fetchone()
     if loc:
-        message = f"The new location of **{invite_id}** is **{loc[0]}**"
+        message = f"The location of **{invite_id}** is **{loc[0]}**"
     await ctx.send(message)
 
 
