@@ -50,7 +50,7 @@ async def on_ready():
     print(f"Logged in as {bot.user.name}")
 
     print("caching invites . . .")
-    cursor.execute(''' SELECT * FROM information_schema.tables WHERE table_name = 'invites' ''')
+    cursor.execute(''' SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'invites' ''')
     if cursor.fetchone()[0] == 0:
         # init database
         cursor.execute(''' CREATE TABLE invites (
@@ -67,7 +67,7 @@ async def on_ready():
             cursor.execute(entry_string)
         connection.commit()
 
-    cursor.execute(''' SELECT * FROM information_schema.tables WHERE table_name = 'defaults' ''')
+    cursor.execute(''' SELECT COUNT(*) FROM information_schema.tables WHERE table_name = 'defaults' ''')
     if cursor.fetchone()[0] == 0:
         # init database
         cursor.execute(''' CREATE TABLE defaults (
