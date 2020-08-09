@@ -7,27 +7,9 @@ import sys
 import io
 import traceback
 import sqlite3 # connect, commit
+import psycopg2
 
 from commands.roles.roles import Roles
-
-
-# globals
-guild_id = 550143114417930250  # TODO: find a way to not hardcode
-cached_invite_list = {}
-token = 0
-
-
-# ----- SQLLITE ----- #
-connection = sqlite3.connect("twiggy.db")
-cursor     = connection.cursor()
-
-
-# bot description
-command_prefix = '-'
-description = "wigwigwig"
-bot = commands.Bot(command_prefix=command_prefix, description=description,
-                   case_insensitive=True)
-
 
 local = len(sys.argv) == 2 and sys.argv[1] == "-l"
 
@@ -40,6 +22,25 @@ if local:
             line_list = line.split("=")
             token = line_list[1]
 
+    connection = sqlite3.connect("twiggy.db") # connect to sqlite if local
+else:
+    DATABASE_URL = os.environ['DATABASE_URL'] # connect to postgres if online
+    connection = psycopg2.connect(DATABASE_URL, sslmode='require')
+
+
+# globals
+guild_id = 550143114417930250  # TODO: find a way to not hardcode
+cached_invite_list = {}
+token = 0
+cursor = connection.cursor()
+
+
+# bot description
+command_prefix = '-'
+description = "wigwigwig"
+bot = commands.Bot(command_prefix=command_prefix, description=description,
+                   case_insensitive=True)
+
 
 bot.add_cog(Roles(bot))
 
@@ -49,7 +50,7 @@ async def on_ready():
     print(f"Logged in as {bot.user.name}")
 
     print("caching invites . . .")
-    cursor.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='invites' ''')
+    cursor.execute(''' SELECT * FROM information_schema.tables WHERE table_name = 'invites' ''')
     if cursor.fetchone()[0] == 0:
         # init database
         cursor.execute(''' CREATE TABLE invites (
@@ -66,7 +67,7 @@ async def on_ready():
             cursor.execute(entry_string)
         connection.commit()
 
-    cursor.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='defaults' ''')
+    cursor.execute(''' SELECT * FROM information_schema.tables WHERE table_name = 'defaults' ''')
     if cursor.fetchone()[0] == 0:
         # init database
         cursor.execute(''' CREATE TABLE defaults (
