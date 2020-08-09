@@ -220,7 +220,7 @@ async def getinfo(ctx, invite_id):
     cursor.execute(query, params)
     message = f"I couldn't find **{invite_id}** in my invites database :c"
     loc = cursor.fetchone()
-    if loc:
+    if loc[0] is not "0":
         message = f"The location of **{invite_id}** is **{loc[0]}**"
     await ctx.send(message)
 
