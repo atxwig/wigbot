@@ -89,7 +89,7 @@ async def on_ready():
     
     print("done")
 
-    game = discord.Game("testing mode")
+    game = discord.Game("wigwigwig")
     await bot.change_presence(activity = game)
 
 
