@@ -4,6 +4,7 @@ from emoji import UNICODE_EMOJI
 import sqlite3
 
 default_channel_id = 0
+
 cache_roles = []
 
 
