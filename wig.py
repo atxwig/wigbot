@@ -29,14 +29,6 @@ bot = commands.Bot(command_prefix=command_prefix, description=description,
                    case_insensitive=True)
 
 
-
-f = open("secrets.txt", "r") # fetch token from secrets file
-lines = f.readlines()
-for line in lines:
-    if "TOKEN" in line:
-        line_list = line.split("=")
-        token = line_list[1]
-
 local = len(sys.argv) == 2 and sys.argv[1] == "-l"
 
 if local:
@@ -48,14 +40,6 @@ if local:
             line_list = line.split("=")
             token = line_list[1]
 
-
-# token = 0
-# f = open("secrets.txt", "r") # fetch token from secrets file
-# lines = f.readlines()
-# for line in lines:
-#     if "TOKEN" in line:
-#         line_list = line.split("=")
-#         token = line_list[1]
 
 bot.add_cog(Roles(bot))
 
