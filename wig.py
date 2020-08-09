@@ -90,7 +90,7 @@ async def on_ready():
 # set channel command
 @bot.command()
 async def setchannel(ctx):
-    query = ''' UPDATE defaults SET value=? WHERE name=? '''
+    query = ''' UPDATE defaults SET value=%s WHERE name=%s '''
     params = (ctx.message.channel.id, "invite")
     cursor.execute(query, params)
     connection.commit()
@@ -100,7 +100,7 @@ async def setchannel(ctx):
 # get invite channel
 @bot.command()
 async def getinvitechannel(ctx):
-    query = ''' SELECT value FROM defaults WHERE name=? '''
+    query = ''' SELECT value FROM defaults WHERE name=%s '''
     params = ("invite",)
     cursor.execute(query, params)
     value = cursor.fetchone()
@@ -124,7 +124,7 @@ async def on_member_join(member):
     for invite in invite_id_list:
         if curr_invite_list[invite.id] != cached_invite_list[invite.id]:
             message += f" Invited by **{invite.inviter.display_name}** from **{invite.code}**"
-            query = ''' SELECT location FROM invites WHERE id=? '''
+            query = ''' SELECT location FROM invites WHERE id=%s '''
             params = (str(invite.id),)
             cursor.execute(query, params)
             loc = cursor.fetchone()
@@ -133,7 +133,7 @@ async def on_member_join(member):
             break
     
     await cache_invites()
-    cursor.execute(''' SELECT value FROM defaults WHERE name=? ''', ("invite",))
+    cursor.execute(''' SELECT value FROM defaults WHERE name=%s ''', ("invite",))
     value = cursor.fetchone()
     channel_id = int(value[0])
     if channel_id:
@@ -205,7 +205,7 @@ async def hug(ctx, member_id):
 @bot.command()
 async def update(ctx, invite_id, *, location):
     params = (str(location), str(invite_id))
-    query = ''' UPDATE invites SET location=? WHERE id=? '''
+    query = ''' UPDATE invites SET location=%s WHERE id=%s '''
     cursor.execute(query, params)
     if cursor.rowcount < 1:
         await ctx.send(f"I couldn't find **{invite_id}** in my invites database :c")
@@ -216,7 +216,7 @@ async def update(ctx, invite_id, *, location):
 # fetch invite info
 @bot.command()
 async def getinfo(ctx, invite_id):
-    query = ''' SELECT location FROM invites WHERE id=? '''
+    query = ''' SELECT location FROM invites WHERE id=%ss '''
     params = (str(invite_id),)
     cursor.execute(query, params)
     message = f"I couldn't find **{invite_id}** in my invites database :c"
