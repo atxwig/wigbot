@@ -6,22 +6,28 @@ import pathlib
 import sys
 import io
 import traceback
+import sqlite3 # connect, commit
 
 from commands.roles.roles import Roles
-
-
-# bot description
-command_prefix = '!w '
-description = "WIGWIGWIG"
-bot = commands.Bot(command_prefix=command_prefix, description=description,
-                   case_insensitive=True)
 
 
 # globals
 guild_id = 550143114417930250  # TODO: find a way to not hardcode
 cached_invite_list = {}
-default_channel = 0
 token = 0
+
+
+# ----- SQLLITE ----- #
+connection = sqlite3.connect("twiggy.db")
+cursor     = connection.cursor()
+
+
+# bot description
+command_prefix = '-'
+description = "WIGWIGWIG"
+bot = commands.Bot(command_prefix=command_prefix, description=description,
+                   case_insensitive=True)
+
 
 f = open("secrets.txt", "r") # fetch token from secrets file
 lines = f.readlines()
@@ -50,10 +56,40 @@ async def on_ready():
     print(f"Logged in as {bot.user.name}")
 
     print("caching invites . . .")
+    cursor.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='invites' ''')
+    if cursor.fetchone()[0] == 0:
+        # init database
+        cursor.execute(''' CREATE TABLE invites (
+            id       text,
+            location text
+        )''')
+        connection.commit()
+
+        invite_list = await bot.get_guild(guild_id).invites()
+        for invite in invite_list:
+            data_string = str((invite.id,0))
+            print(data_string)
+            entry_string = f"INSERT INTO invites VALUES {data_string}"
+            cursor.execute(entry_string)
+        connection.commit()
+
+    cursor.execute(''' SELECT count(name) FROM sqlite_master WHERE type='table' AND name='defaults' ''')
+    if cursor.fetchone()[0] == 0:
+        # init database
+        cursor.execute(''' CREATE TABLE defaults (
+            name  text,
+            value text
+        )''')
+        data_string = str(("invite", 0))
+        entry_string = f"INSERT INTO defaults VALUES {data_string}"
+        cursor.execute(entry_string)
+        connection.commit()
+
     await cache_invites()
+    
     print("done")
 
-    game = discord.Game("ily alesha <3")
+    game = discord.Game("testing mode")
     await bot.change_presence(activity = game)
 
 
@@ -61,9 +97,25 @@ async def on_ready():
 # set channel command
 @bot.command()
 async def setchannel(ctx):
-    global default_channel
-    default_channel = ctx.message.channel
-    await ctx.send(f"#{default_channel} has been set as the default channel!")
+    query = ''' UPDATE defaults SET value=? WHERE name=? '''
+    params = (ctx.message.channel.id, "invite")
+    cursor.execute(query, params)
+    connection.commit()
+    await ctx.send(f"{ctx.message.channel.mention} has been set as the default channel for invites!")
+
+
+# get invite channel
+@bot.command()
+async def getinvitechannel(ctx):
+    query = ''' SELECT value FROM defaults WHERE name=? '''
+    params = ("invite",)
+    cursor.execute(query, params)
+    value = cursor.fetchone()
+    channel_id = int(value[0])
+    if channel_id:
+        await ctx.send(f"The default channel is {bot.get_channel(channel_id).mention}.")
+    else:
+        await ctx.send(f"The default channel for invites hasn't been set yet :c")
 
 
 # member join
@@ -78,11 +130,40 @@ async def on_member_join(member):
 
     for invite in invite_id_list:
         if curr_invite_list[invite.id] != cached_invite_list[invite.id]:
-            message += f" Invited from **{invite.code}** by **{invite.inviter.display_name}**"
+            message += f" Invited by **{invite.inviter.display_name}** from **{invite.code}**"
+            query = ''' SELECT location FROM invites WHERE id=? '''
+            params = (str(invite.id),)
+            cursor.execute(query, params)
+            loc = cursor.fetchone()
+            if loc[0] is not "0":
+                message += f", located at **{str(loc[0])}**"
             break
-
+    
     await cache_invites()
-    await bot.get_channel(default_channel.id).send(message)
+    cursor.execute(''' SELECT value FROM defaults WHERE name=? ''', ("invite",))
+    value = cursor.fetchone()
+    channel_id = int(value[0])
+    if channel_id:
+        await bot.get_channel(channel_id).send(message)
+    # else:
+        # TODO: make bot dm me if this messes up
+
+# invite creation
+@bot.event
+async def on_invite_create(invite):
+    data_string = str((invite.id,0))
+    entry_string = f"INSERT INTO invites VALUES {data_string}"
+    cursor.execute(entry_string)
+    connection.commit()
+    
+    cursor.execute(''' SELECT value FROM defaults WHERE name=invite ''')
+    value = cursor.fetchone()
+    channel_id = int(value[0])
+    if channel_id:
+        await bot.get_channel(channel_id).send(
+            f"Invite **{invite.id}** has been created by **{invite.inviter}**")
+    # else:
+        # TODO: make bot dm me if this messes up
 
 
 # gets current invites
@@ -97,7 +178,7 @@ async def cache_invites():
 # test command
 @bot.command()
 async def test(ctx):
-    await ctx.send("wigwigwig")
+    await ctx.send("wigwigwig [LOCAL]")
 
 
 # help command
@@ -124,6 +205,31 @@ async def hug(ctx, member_id):
         await ctx.send(f"{ctx.message.author.mention} is omega cute and hugged {member.mention}!")
     else:
         await ctx.send("I couldn't find that user D:")
+
+# update invite command
+@bot.command()
+async def update(ctx, invite_id, *, location):
+    params = (str(location), str(invite_id))
+    query = ''' UPDATE invites SET location=? WHERE id=? '''
+    cursor.execute(query, params)
+    if cursor.rowcount < 1:
+        await ctx.send(f"I couldn't find **{invite_id}** in my invites database :c")
+    else:
+        await ctx.send(f"The new location of **{invite_id}** is now **{location}**")
+    connection.commit()
+
+# fetch invite info
+@bot.command()
+async def getinfo(ctx, invite_id):
+    query = ''' SELECT location FROM invites WHERE id=? '''
+    params = (str(invite_id),)
+    cursor.execute(query, params)
+    message = f"I couldn't find **{invite_id}** in my invites database :c"
+    loc = cursor.fetchone()
+    if loc:
+        message = f"The new location of **{invite_id}** is **{loc[0]}**"
+    await ctx.send(message)
+
 
 
 if local:
