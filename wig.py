@@ -7,32 +7,35 @@ import sys
 import io
 import traceback
 import sqlite3 # connect, commit
+import asyncio
 import psycopg2
 
 from commands.roles.roles import Roles
 
 local = len(sys.argv) == 2 and sys.argv[1] == "-l"
+# globals
+guild_id = 550143114417930250  # TODO: find a way to not hardcode
+cached_invite_list = {}
+token = 0
+
 
 if local:
-    token = 0
     f = open("secrets.txt", "r") # fetch token from secrets file
     lines = f.readlines()
     for line in lines:
         if "TOKEN" in line:
             line_list = line.split("=")
             token = line_list[1]
+            print(token)
 
     connection = sqlite3.connect("twiggy.db") # connect to sqlite if local
+
 else:
     DATABASE_URL = os.environ['DATABASE_URL'] # connect to postgres if online
     connection = psycopg2.connect(DATABASE_URL, sslmode='require')
 
-
-# globals
-guild_id = 550143114417930250  # TODO: find a way to not hardcode
-cached_invite_list = {}
-token = 0
 cursor = connection.cursor()
+
 
 
 # bot description
@@ -170,7 +173,7 @@ async def cache_invites():
 # test command
 @bot.command()
 async def test(ctx):
-    await ctx.send("wigwigwig [LOCAL]")
+    await ctx.send("wigwigwig")
 
 
 # help command
@@ -225,6 +228,21 @@ async def getinfo(ctx, invite_id):
         message = f"The location of **{invite_id}** is **{loc[0]}**"
     await ctx.send(message)
 
+
+# mc whitelist command
+@bot.command()
+async def whitelist(ctx, username):
+    await bot.get_channel(737927157942190140).send(f"whitelist add {username}")
+    def check(m):
+        return "Added" in m.content \
+            and m.channel.id == 737927157942190140
+
+    try:
+        msg = await bot.wait_for('message', timeout=10.0, check=check)
+    except asyncio.TimeoutError:
+        await ctx.send(f"Something went wrong :c")
+    else:
+        await ctx.send(f"Added {username} to the whitelist <3")
 
 
 if local:
