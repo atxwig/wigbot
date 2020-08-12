@@ -2,5 +2,6 @@
 __pycache__/
 
 # Files
+localwig.py
 secrets.txt
 *.db

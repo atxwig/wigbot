@@ -12,30 +12,15 @@ import psycopg2
 
 from commands.roles.roles import Roles
 
-local = len(sys.argv) == 2 and sys.argv[1] == "-l"
 # globals
-guild_id = 550143114417930250  # TODO: find a way to not hardcode
+guild_id = 670469511572488223  # TODO: find a way to not hardcode
 cached_invite_list = {}
 token = 0
 
 
-if local:
-    f = open("secrets.txt", "r") # fetch token from secrets file
-    lines = f.readlines()
-    for line in lines:
-        if "TOKEN" in line:
-            line_list = line.split("=")
-            token = line_list[1]
-            print(token)
-
-    connection = sqlite3.connect("twiggy.db") # connect to sqlite if local
-
-else:
-    DATABASE_URL = os.environ['DATABASE_URL'] # connect to postgres if online
-    connection = psycopg2.connect(DATABASE_URL, sslmode='require')
-
+DATABASE_URL = os.environ['DATABASE_URL'] # connect to postgres if online
+connection = psycopg2.connect(DATABASE_URL, sslmode='require')
 cursor = connection.cursor()
-
 
 
 # bot description
@@ -46,6 +31,7 @@ bot = commands.Bot(command_prefix=command_prefix, description=description,
 
 
 bot.add_cog(Roles(bot))
+
 
 # start up
 @bot.event
@@ -87,7 +73,6 @@ async def on_ready():
 
     game = discord.Game("wigwigwig")
     await bot.change_presence(activity = game)
-
 
 
 # set channel command
@@ -144,15 +129,17 @@ async def on_member_join(member):
     # else:
         # TODO: make bot dm me if this messes up
 
+
 # invite creation
 @bot.event
 async def on_invite_create(invite):
+    cached_invite_list[invite.id] = 0
     data_string = str((invite.id,0))
     entry_string = f"INSERT INTO invites VALUES {data_string}"
     cursor.execute(entry_string)
     connection.commit()
     
-    cursor.execute(''' SELECT value FROM defaults WHERE name=invite ''')
+    cursor.execute(''' SELECT value FROM defaults WHERE name=%s ''', ("invite",))
     value = cursor.fetchone()
     channel_id = int(value[0])
     if channel_id:
@@ -169,6 +156,7 @@ async def cache_invites():
     for invite in invite_id_list:
         cached_invite_list[invite.id] = invite.uses
         print(f"added invite {invite.id}")
+
 
 # test command
 @bot.command()
@@ -216,10 +204,11 @@ async def update(ctx, invite_id, *, location):
         await ctx.send(f"The new location of **{invite_id}** is now **{location}**")
     connection.commit()
 
+
 # fetch invite info
 @bot.command()
 async def getinfo(ctx, invite_id):
-    query = ''' SELECT location FROM invites WHERE id=%ss '''
+    query = ''' SELECT location FROM invites WHERE id=%s '''
     params = (str(invite_id),)
     cursor.execute(query, params)
     message = f"I couldn't find **{invite_id}** in my invites database :c"
@@ -245,7 +234,4 @@ async def whitelist(ctx, username):
         await ctx.send(f"Added {username} to the whitelist <3")
 
 
-if local:
-    bot.run(token)
-else:
-    bot.run(os.environ.get('BOT_TOKEN'))
+bot.run(os.environ.get('BOT_TOKEN'))
