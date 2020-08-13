@@ -13,7 +13,7 @@ import psycopg2
 from commands.roles.roles import Roles
 
 # globals
-guild_id = 670469511572488223  # TODO: find a way to not hardcode
+guild_id = 550143114417930250  # TODO: find a way to not hardcode
 cached_invite_list = {}
 token = 0
 
