@@ -229,7 +229,7 @@ async def whitelist(ctx, username):
     try:
         msg = await bot.wait_for('message', timeout=10.0, check=check)
     except asyncio.TimeoutError:
-        await ctx.send(f"Something went wrong :c")
+        await ctx.send(f"Something went wrong :c {bot.get_guild(guild_id).get_member{146450066943639552}.mention}")
     else:
         await ctx.send(f"Added {username} to the whitelist <3")
 
