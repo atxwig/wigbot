@@ -14,6 +14,7 @@ from commands.roles.roles import Roles
 
 # globals
 guild_id = 550143114417930250  # TODO: find a way to not hardcode
+dev_id   = 146450066943639552
 cached_invite_list = {}
 token = 0
 
@@ -229,7 +230,7 @@ async def whitelist(ctx, username):
     try:
         msg = await bot.wait_for('message', timeout=10.0, check=check)
     except asyncio.TimeoutError:
-        await ctx.send(f"Something went wrong :c {bot.get_guild(guild_id).get_member{146450066943639552}.mention}")
+        await ctx.send(f"Something went wrong :c {bot.get_guild(guild_id).get_member(dev_id).mention}")
     else:
         await ctx.send(f"Added {username} to the whitelist <3")
 
