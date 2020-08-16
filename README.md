@@ -9,6 +9,7 @@ This bot handles functions within the WiG Discord server. The `master` branch of
 - runtime.txt = Specifies the current version of Python
 
 - wig.py = File that currently holds all bot code
+- Roles.py = File that holds all commands pertaining to roles
 
 ## Deployment
 As stated above, any push to the `master` branch will automatically deploy to Heroku and update the bot live. If something goes wrong, the error will be in the Heroku client.
