@@ -6,13 +6,15 @@ import pathlib
 import sys
 import io
 import traceback
+import asyncio
 import sqlite3 # connect, commit
 
-from commands.roles.roles import Roles
+# from commands.roles.roles import Roles
 
 
 # globals
 guild_id = 550143114417930250  # TODO: find a way to not hardcode
+DEV_ID   = [146450066943639552, 412826486446227457]
 cached_invite_list = {}
 token = 0
 
@@ -25,31 +27,11 @@ cursor     = connection.cursor()
 # bot description
 command_prefix = '-'
 description = "wigwigwig"
+intents = discord.Intents.all()
 bot = commands.Bot(command_prefix=command_prefix, description=description,
-                   case_insensitive=True)
+                   case_insensitive=True, intents=intents)
 
 
-
-f = open("secrets.txt", "r") # fetch token from secrets file
-lines = f.readlines()
-for line in lines:
-    if "TOKEN" in line:
-        line_list = line.split("=")
-        token = line_list[1]
-
-local = len(sys.argv) == 2 and sys.argv[1] == "-l"
-
-if local:
-    token = 0
-    f = open("secrets.txt", "r") # fetch token from secrets file
-    lines = f.readlines()
-    for line in lines:
-        if "TOKEN" in line:
-            line_list = line.split("=")
-            token = line_list[1]
-
-
-# token = 0
 # f = open("secrets.txt", "r") # fetch token from secrets file
 # lines = f.readlines()
 # for line in lines:
@@ -57,7 +39,28 @@ if local:
 #         line_list = line.split("=")
 #         token = line_list[1]
 
-bot.add_cog(Roles(bot))
+# local = len(sys.argv) == 2 and sys.argv[1] == "-l"
+
+# if local:
+#     token = 0
+#     f = open("secrets.txt", "r") # fetch token from secrets file
+#     lines = f.readlines()
+#     for line in lines:
+#         if "TOKEN" in line:
+#             line_list = line.split("=")
+#             token = line_list[1]
+#             print(token)
+
+
+token = 0
+f = open("secrets.txt", "r") # fetch token from secrets file
+lines = f.readlines()
+for line in lines:
+    if "TOKEN" in line:
+        line_list = line.split("=")
+        token = line_list[1]
+
+# bot.add_cog(Roles(bot))
 
 # start up
 @bot.event
@@ -125,12 +128,6 @@ async def getinvitechannel(ctx):
     else:
         await ctx.send(f"The default channel for invites hasn't been set yet :c")
 
-
-# get channel command
-@bot.command()
-async def getchannel(ctx):
-    global default_channel_id
-    await ctx.send(f"The default channel is {bot.get_channel(default_channel_id).mention}.")
 
 # member join
 @bot.event
@@ -215,12 +212,13 @@ async def helpme(ctx):
 # hug command
 @bot.command()
 async def hug(ctx, member_id):
-    member_id = member_id[3:-1]
+    print(f'member id is {member_id}')
+    member_id = member_id[2:-1]
     member = ctx.message.guild.get_member(int(member_id))
     if member:
         await ctx.send(f"{ctx.message.author.mention} is omega cute and hugged {member.mention}!")
     else:
-        await ctx.send("I couldn't find that user D:")
+        await ctx.send(f"I couldn't find that user D:")
 
 
 # update invite command
@@ -243,13 +241,32 @@ async def getinfo(ctx, invite_id):
     cursor.execute(query, params)
     message = f"I couldn't find **{invite_id}** in my invites database :c"
     loc = cursor.fetchone()
-    if loc:
-        message = f"The new location of **{invite_id}** is **{loc[0]}**"
+    if loc[0] is not "0":
+        message = f"The location of **{invite_id}** is **{loc[0]}**"
     await ctx.send(message)
 
 
+# mc whitelist command
+@bot.command()
+async def whitelist(ctx, username):
+    await bot.get_channel(737927157942190140).send(f"whitelist add {username}")
+    def check(m):
+        return "Added" in m.content \
+            and m.channel.id == 737927157942190140
 
-if local:
-    bot.run(token)
-else:
-    bot.run(os.environ.get('BOT_TOKEN'))
+    try:
+        msg = await bot.wait_for('message', timeout=10.0, check=check)
+    except asyncio.TimeoutError:
+        msg = f"Something went wrong :c "
+        for id in DEV_ID:    
+            msg += f'{bot.get_guild(guild_id).get_member(id).mention} '
+        await ctx.send(msg)
+    else:
+        await ctx.send(f"Added {username} to the whitelist <3")
+
+
+# if local:
+#     bot.run(token)
+# else:
+#     bot.run(os.environ.get('BOT_TOKEN'))
+bot.run(token)
